@@ -1,0 +1,36 @@
+rules:
+  - id: custom-sql-string-building
+    languages: [typescript, javascript]
+    severity: ERROR
+    message: Requête SQL construite par interpolation/concaténation (injection SQL).
+    metadata: {cwe: ["CWE-89: SQL Injection"], category: security}
+    pattern-either:
+      - pattern: $DB.query(`...${$X}...`)
+      - pattern: $DB.query("..." + $X)
+  - id: custom-taint-request-to-sql
+    mode: taint
+    languages: [typescript, javascript]
+    severity: ERROR
+    message: Donnée utilisateur transmise à une requête SQL sans paramétrage.
+    metadata: {cwe: ["CWE-89: SQL Injection"], category: security}
+    pattern-sources:
+      - pattern: req.query.$P
+      - pattern: req.body.$P
+      - pattern: req.params.$P
+    pattern-sinks:
+      - pattern: $DB.query(...)
+  - id: custom-open-redirect
+    languages: [typescript, javascript]
+    severity: WARNING
+    message: Redirection basée sur une entrée utilisateur (open redirect).
+    metadata: {cwe: ["CWE-601: Open Redirect"], category: security}
+    pattern-either:
+      - pattern: $RES.redirect($REQ.query.$P)
+      - pattern: $RES.redirect($REQ.body.$P)
+  - id: custom-hardcoded-secret
+    languages: [generic]
+    severity: WARNING
+    message: Secret potentiellement codé en dur.
+    metadata: {cwe: ["CWE-798: Hard-coded Credentials"], category: security}
+    pattern-regex: (?i)(secret|private_?key|password|api_?key)\s*[:=]\s*['"][^'"\s]{8,}['"]
+    paths: {exclude: ["*.lock", "*test*", "*spec*", "node_modules"]}

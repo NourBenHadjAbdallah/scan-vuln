@@ -1,0 +1,18 @@
+# Cibles web (crAPI : voir scripts/deploy_crapi.sh, il a son propre compose)
+services:
+  juice-shop:
+    image: bkimminich/juice-shop:latest
+    ports: ["3000:3000"]
+  roundcube:
+    image: roundcube/roundcubemail:latest
+    ports: ["8081:80"]
+    environment:
+      ROUNDCUBEMAIL_DB_TYPE: sqlite
+      ROUNDCUBEMAIL_DEFAULT_HOST: ssl://imap.example.com
+  sonarqube:            # optionnel : docker compose --profile sonar up -d
+    image: sonarqube:community
+    profiles: ["sonar"]
+    ports: ["9000:9000"]
+networks:
+  default:
+    name: vulnnet

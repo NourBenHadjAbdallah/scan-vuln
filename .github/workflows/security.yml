@@ -1,0 +1,50 @@
+name: security-analysis
+on:
+  push: {paths: ["rules/**", "scripts/**", "ground_truth/**", "docker-compose.yml", ".github/workflows/**"]}
+  pull_request:
+  schedule: [{cron: "0 3 * * 1"}]       # re-scan hebdo des cibles (le code cible peut changer)
+  workflow_dispatch:
+env: {TARGET: juice-shop}
+jobs:
+  sast:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: bash scripts/fetch_targets.sh && pip install semgrep && bash scripts/scan.sh sast
+      - uses: actions/upload-artifact@v4
+        with: {name: raw-sast, path: results/raw}
+  sca:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: 20}
+      - run: bash scripts/fetch_targets.sh && bash scripts/scan.sh sca
+      - uses: actions/upload-artifact@v4
+        with: {name: raw-sca, path: results/raw}
+  dast:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          docker compose up -d juice-shop
+          for i in $(seq 30); do curl -sf localhost:3000 >/dev/null && break; sleep 3; done
+          bash scripts/scan.sh dast
+          bash scripts/scan.sh custom
+      - uses: actions/upload-artifact@v4
+        with: {name: raw-dast, path: results/raw}
+  report:
+    needs: [sast, sca, dast]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with: {pattern: raw-*, path: results/raw, merge-multiple: true}
+      - run: |
+          python3 scripts/aggregate.py results/raw results/normalized/findings.json
+          python3 scripts/metrics.py results/normalized/findings.json ground_truth/juice-shop.json | tee results/normalized/metrics.txt
+          # comparaison avec le dernier run archivé s'il existe
+          [ -f baseline/findings.json ] && python3 scripts/compare.py baseline/findings.json results/normalized/findings.json || true
+      - uses: actions/upload-artifact@v4          # archivage (rétention 90 j)
+        with: {name: "results-${{ github.run_number }}", path: results/, retention-days: 90}

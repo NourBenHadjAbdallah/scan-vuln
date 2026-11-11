@@ -1,0 +1,15 @@
+[
+ {"id":"sqli-login","category":"sast","cwe":"CWE-89","hint":"routes/login"},
+ {"id":"sqli-search","category":"sast","cwe":"CWE-89","hint":"routes/search"},
+ {"id":"nosqli-reviews","category":"sast","cwe":"CWE-943","hint":"routes/"},
+ {"id":"open-redirect","category":"sast","cwe":"CWE-601","hint":"routes/redirect"},
+ {"id":"hardcoded-keys","category":"sast","cwe":"CWE-798","hint":"lib/insecurity"},
+ {"id":"path-traversal-ftp","category":"sast","cwe":"CWE-22","hint":"routes/fileServer"},
+ {"id":"dast-sqli-search","category":"dast","cwe":"CWE-89","hint":"/rest/products/search"},
+ {"id":"dast-xss","category":"dast","cwe":"CWE-79","hint":null},
+ {"id":"dast-exposed-ftp","category":"dast","cwe":"CWE-548","hint":"/ftp"},
+ {"id":"dast-missing-csp","category":"dast","cwe":"CWE-693","hint":null},
+ {"id":"sca-jsonwebtoken","category":"sca","cwe":null,"hint":"jsonwebtoken"},
+ {"id":"sca-express-jwt","category":"sca","cwe":null,"hint":"express-jwt"},
+ {"id":"sca-sanitize-html","category":"sca","cwe":null,"hint":"sanitize-html"}
+]

@@ -1,0 +1,6 @@
+targets/
+results/raw/*
+results/normalized/*
+!results/**/.gitkeep
+RESULTS_DEMO/
+__pycache__/
